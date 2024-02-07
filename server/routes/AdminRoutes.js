@@ -13,7 +13,7 @@ router.post("/adminLogin", (req, res) => {
     if (result.length > 0) {
       const email = result[0];
       const token = jwt.sign(
-        { role: "admin", email: email },
+        { role: "admin", email: email,id:result[0].id },
         "jwt_secret_key",
         { expiresIn: "1d" }
       );
@@ -93,12 +93,14 @@ router.get("/employee/:id", (req, res) => {
     return res.json({ Status: true, employee: result });
   });
 });
-router.get("/delete_employee/:id", (req, res) => {
+
+router.delete("/delete_employee/:id", (req, res) => {
+  console.log(req);
   const id = req.params.id;
-  const sql = "delete FROM employee WHERE id = ?";
+  const sql = "DELETE FROM employee WHERE id = ?";
   con.query(sql, [id], (err, result) => {
     if (err) return res.json({ Status: false, Error: "Query Error" });
-    return res.json({ Status: true, employee: result });
+    return res.json({ Status: true });
   });
 });
 
@@ -118,6 +120,40 @@ router.put("/edit_employee/:id", (req, res) => {
     console.log(result);
     return res.json({ Status: true });
   });
+});
+
+router.get("/admin_count", (req, res) => {
+  const sql = "SELECT COUNT(id) as admin from admin";
+  con.query(sql, (err, result) => {
+    if (err) return res.json({ Status: false, Error: "Query Error" });
+    return res.json({ Status: true, count: result });
+  });
+});
+router.get("/employee_count", (req, res) => {
+  const sql = "SELECT COUNT(id) as employee from employee";
+  con.query(sql, (err, result) => {
+    if (err) return res.json({ Status: false, Error: "Query Error" });
+    return res.json({ Status: true, count: result });
+  });
+});
+router.get("/salary_count", (req, res) => {
+  const sql = "SELECT sum(salary) as empSalary from employee";
+  con.query(sql, (err, result) => {
+    if (err) return res.json({ Status: false, Error: "Query Error" });
+    return res.json({ Status: true, total: result });
+  });
+});
+
+router.get("/admin_lists", (req, res) => {
+  const sql = "select * from admin";
+  con.query(sql, (err, result) => {
+    if (err) return res.json({ Status: false, Error: "Query Error" });
+    return res.json({ Status: true, Result: result });
+  });
+});
+router.get("/logout", (req, res) => {
+  res.clearCookie("token");
+  res.json({Status:true})
 });
 
 export { router as adminRouter };
